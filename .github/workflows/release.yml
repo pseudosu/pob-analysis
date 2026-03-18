@@ -1,0 +1,155 @@
+name: Build & Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build-mac:
+    runs-on: macos-14  # Apple Silicon
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install LuaJIT
+        run: brew install luajit
+
+      - name: Clone PoB source
+        run: git clone --depth=1 https://github.com/PathOfBuildingCommunity/PathOfBuilding.git resources/pob-src-repo
+
+      - name: Setup PoB resources
+        run: |
+          mkdir -p resources/pob-src resources/pob-runtime/lua resources/luajit
+          cp -r resources/pob-src-repo/src/* resources/pob-src/
+          # Restore our custom bridge (overwritten by PoB src copy)
+          git checkout -- resources/pob-src/pobBridge.lua
+          # Runtime Lua modules
+          cp resources/pob-src-repo/runtime/lua/base64.lua resources/pob-runtime/lua/ 2>/dev/null || true
+          cp resources/pob-src-repo/runtime/lua/dkjson.lua resources/pob-runtime/lua/ 2>/dev/null || true
+          cp resources/pob-src-repo/runtime/lua/xml.lua resources/pob-runtime/lua/ 2>/dev/null || true
+          cp resources/pob-src-repo/runtime/lua/lua-profiler.lua resources/pob-runtime/lua/ 2>/dev/null || true
+          cp -r resources/pob-src-repo/runtime/lua/sha1 resources/pob-runtime/lua/ 2>/dev/null || true
+          # LuaJIT binary
+          cp "$(which luajit)" resources/luajit/luajit-mac-arm64
+
+      - name: Compile lua-utf8.so
+        run: |
+          LUAJIT_INC="/opt/homebrew/opt/luajit/include/luajit-2.1"
+          cd /tmp
+          git clone --depth=1 https://github.com/starwing/luautf8.git luautf8-src
+          clang -O2 -bundle -undefined dynamic_lookup -I"$LUAJIT_INC" -o lua-utf8.so luautf8-src/lutf8lib.c
+          cp lua-utf8.so "$GITHUB_WORKSPACE/resources/pob-runtime/lua/lua-utf8.so"
+
+      - name: Build app
+        run: npm run build
+
+      - name: Package macOS DMG
+        run: npx electron-builder --mac --config electron-builder.config.cjs
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload macOS artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: mac-release
+          path: dist-release/*.dmg
+
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Clone PoB source
+        run: git clone --depth=1 https://github.com/PathOfBuildingCommunity/PathOfBuilding.git resources/pob-src-repo
+
+      - name: Setup PoB resources
+        shell: bash
+        run: |
+          mkdir -p resources/pob-src resources/pob-runtime/lua resources/luajit
+          cp -r resources/pob-src-repo/src/* resources/pob-src/
+          # Restore our custom bridge
+          git checkout -- resources/pob-src/pobBridge.lua
+          # Runtime Lua modules
+          cp resources/pob-src-repo/runtime/lua/base64.lua resources/pob-runtime/lua/ 2>/dev/null || true
+          cp resources/pob-src-repo/runtime/lua/dkjson.lua resources/pob-runtime/lua/ 2>/dev/null || true
+          cp resources/pob-src-repo/runtime/lua/xml.lua resources/pob-runtime/lua/ 2>/dev/null || true
+          cp resources/pob-src-repo/runtime/lua/lua-profiler.lua resources/pob-runtime/lua/ 2>/dev/null || true
+          cp -r resources/pob-src-repo/runtime/lua/sha1 resources/pob-runtime/lua/ 2>/dev/null || true
+          # Windows DLLs
+          cp resources/pob-src-repo/runtime/zlib1.dll resources/pob-src/ 2>/dev/null || true
+          cp resources/pob-src-repo/runtime/vcruntime140.dll resources/pob-src/ 2>/dev/null || true
+          cp resources/pob-src-repo/runtime/vcruntime140_1.dll resources/pob-src/ 2>/dev/null || true
+          cp resources/pob-src-repo/runtime/msvcp140.dll resources/pob-src/ 2>/dev/null || true
+          cp resources/pob-src-repo/runtime/msvcp140_1.dll resources/pob-src/ 2>/dev/null || true
+          cp resources/pob-src-repo/runtime/msvcp140_2.dll resources/pob-src/ 2>/dev/null || true
+          cp resources/pob-src-repo/runtime/lua-utf8.dll resources/pob-runtime/lua/ 2>/dev/null || true
+
+      - name: Download Windows LuaJIT
+        shell: bash
+        run: |
+          curl -sL -o luajit-win.zip "https://github.com/nicebyte/luajit-build/releases/download/v2.1/LuaJIT-win-x64.zip" || true
+          if [ -f luajit-win.zip ]; then
+            unzip -o luajit-win.zip -d luajit-tmp 2>/dev/null || true
+            find luajit-tmp -name "luajit.exe" -exec cp {} resources/luajit/luajit-win-x64.exe \; 2>/dev/null || true
+            find luajit-tmp -name "lua51.dll" -exec cp {} resources/luajit/lua51.dll \; 2>/dev/null || true
+          fi
+          # Fallback: try MSYS2
+          if [ ! -f "resources/luajit/luajit-win-x64.exe" ]; then
+            choco install luajit -y 2>/dev/null || true
+            cp "$(which luajit 2>/dev/null || echo /c/ProgramData/chocolatey/bin/luajit.exe)" resources/luajit/luajit-win-x64.exe 2>/dev/null || true
+          fi
+
+      - name: Build app
+        run: npm run build
+
+      - name: Package Windows installer
+        run: npx electron-builder --win --config electron-builder.config.cjs
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Windows artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: win-release
+          path: dist-release/*.exe
+
+  release:
+    needs: [build-mac, build-windows]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: release-artifacts
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            release-artifacts/mac-release/*.dmg
+            release-artifacts/win-release/*.exe
+          generate_release_notes: true
+          draft: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
