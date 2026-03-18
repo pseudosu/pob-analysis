@@ -1,0 +1,35 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+dist-electron/
+dist-release/
+
+# PoB source (too large for git — cloned during setup)
+resources/pob-src/
+!resources/pob-src/pobBridge.lua
+resources/pob-src-repo/
+
+# Backup files
+*.bak
+
+# PoB runtime (generated during setup)
+resources/pob-runtime/
+
+# LuaJIT binaries (platform-specific, downloaded during setup)
+resources/luajit/
+
+# Decoded XML from testing
+decoded.xml
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+
+# Logs
+*.log

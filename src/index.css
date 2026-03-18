@@ -1,0 +1,124 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+
+  html, body, #root {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    background: #0D0D0D;
+    color: #C8B273;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #1A1612;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #3D3325;
+    border-radius: 3px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #AF9A5A;
+  }
+}
+
+@layer components {
+  .panel {
+    @apply bg-poe-panel border border-poe-border rounded-lg;
+  }
+
+  .btn-primary {
+    @apply bg-poe-gold text-poe-dark font-semibold px-5 py-2 rounded
+           hover:brightness-110 active:brightness-90 transition-all
+           disabled:opacity-40 disabled:cursor-not-allowed;
+  }
+
+  .btn-ghost {
+    @apply border border-poe-border text-poe-muted px-4 py-2 rounded
+           hover:border-poe-gold hover:text-poe-gold transition-all;
+  }
+
+  .stat-value {
+    @apply text-2xl font-bold text-poe-gold tabular-nums;
+  }
+
+  .stat-label {
+    @apply text-xs uppercase tracking-wider text-poe-muted;
+  }
+
+  .chip-gem {
+    @apply text-xs px-2 py-0.5 rounded-full bg-poe-gem/20 text-poe-gem border border-poe-gem/30;
+  }
+
+  .chip-notable {
+    @apply text-xs px-2 py-0.5 rounded-full bg-poe-notable/20 text-poe-notable border border-poe-notable/30;
+  }
+
+  .chip-item {
+    @apply text-xs px-2 py-0.5 rounded-full bg-poe-item/20 text-poe-item border border-poe-item/30;
+  }
+}
+
+/* PoE-style tooltip */
+.poe-tooltip {
+  min-width: 240px;
+  max-width: 380px;
+  background: linear-gradient(180deg, #1a1a1a 0%, #0c0c0e 100%);
+  border: 1px solid #3a2a1a;
+  border-radius: 2px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.8), 0 0 60px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  font-family: 'FontinSmallCaps', 'Fontin', Georgia, serif;
+  font-size: 13px;
+  line-height: 1.4;
+}
+.poe-tooltip-header {
+  padding: 6px 12px 4px;
+  text-align: center;
+  border-bottom: 1px solid;
+}
+.poe-tooltip-name {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+.poe-tooltip-sep {
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, #3a2a1a 20%, #5a4a2a 50%, #3a2a1a 80%, transparent 100%);
+  margin: 0 8px;
+}
+.poe-tooltip-desc {
+  padding: 6px 12px;
+  color: #7F7F7F;
+  font-size: 11px;
+  line-height: 1.5;
+  font-family: -apple-system, system-ui, sans-serif;
+}
+.poe-tooltip-mods {
+  padding: 4px 12px 6px;
+}
+.poe-tooltip-mod {
+  padding: 1px 0;
+  font-size: 13px;
+}
+.poe-mod-explicit { color: #9999FF; }
+.poe-mod-crafted { color: #C4C4FF; font-style: italic; }
+.poe-mod-requirement { color: #999; }
+.poe-mod-default { color: #DDD; }
+.poe-mod-implicit { color: #8888FF; }
+.poe-tooltip-footer {
+  padding: 3px 12px 6px;
+  color: #808080;
+  font-size: 11px;
+  text-align: center;
+}
