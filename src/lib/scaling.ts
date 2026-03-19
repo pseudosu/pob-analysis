@@ -199,6 +199,17 @@ export async function runScalingTests(
 ): Promise<ScalingResult[]> {
   const tests = category === 'offensive' ? OFFENSIVE_TESTS : DEFENSIVE_TESTS
 
+  // Fetch actual baseline via a no-op calcWith to get accurate TotalEHP and DPS
+  try {
+    const baselineResult = await api.pob.calcWith({})
+    if (baselineResult) {
+      const bDps = baselineResult.CombinedDPS ?? baselineResult.FullDPS ?? baselineResult.TotalDPS ?? 0
+      const bEhp = baselineResult.TotalEHP ?? 0
+      if (bDps > 0) baselineDps = bDps
+      if (bEhp > 0) baselineEhp = bEhp
+    }
+  } catch { /* use passed-in values */ }
+
   // Build batch calc jobs — each job uses addMods
   const jobs = tests.map(t => ({ addMods: t.mods }))
 

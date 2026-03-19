@@ -898,10 +898,13 @@ const SYNERGY_RULES: SynergyRule[] = [
       "Low Life condition is active, enabling Pain Attunement (30% more " +
       "spell damage) and various low-life specific bonuses.",
     detect(data) {
-      return (
-        hasCondition(data, "LowLife") ||
-        stat(data, "LifeUnreserved") < stat(data, "Life") * 0.35
-      );
+      // Only trigger on explicit LowLife condition, or if LifeUnreserved is
+      // actually present and below 35% of Life (avoid false positive when
+      // LifeUnreserved is 0/missing from stats)
+      if (hasCondition(data, "LowLife")) return true;
+      const lifeUnres = stat(data, "LifeUnreserved");
+      const life = stat(data, "Life");
+      return lifeUnres > 0 && life > 0 && lifeUnres < life * 0.35;
     },
   },
 

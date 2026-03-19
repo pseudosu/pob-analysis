@@ -498,35 +498,8 @@ local function calcWith(params)
     end
   end
 
-  -- Add temporary mods (for scaling advisor / what-if analysis)
-  if params.addMods and type(params.addMods) == "table" then
-    local configModList = build.configTab and build.configTab.modList
-    if configModList then
-      local addedMods = {}
-      for _, m in ipairs(params.addMods) do
-        local modStat = m.stat or m[1]
-        local modType = m.type or m[2]
-        local modVal  = m.value or m[3]
-        local modSrc  = m.source or "ScalingAdvisor"
-        if modStat and modType and modVal then
-          local ok2, newMod = pcall(function()
-            return modLib.createMod(modStat, modType, modVal, modSrc)
-          end)
-          if ok2 and newMod then
-            configModList:AddMod(newMod)
-            addedMods[#addedMods+1] = newMod
-          end
-        end
-      end
-      if #addedMods > 0 then
-        restore[#restore+1] = function()
-          -- Remove added mods by rebuilding modList without them
-          -- Simplest: just trigger a full config rebuild on restore
-          build.configTab:BuildModList()
-        end
-      end
-    end
-  end
+  -- Store addMods for injection after OnFrame (OnFrame rebuilds configTab.modList)
+  local pendingAddMods = params.addMods
 
   -- Deallocate a tree node temporarily
   if params.removeNode then
@@ -545,6 +518,31 @@ local function calcWith(params)
   -- Rebuild calc output
   build.buildFlag = true
   runCallback("OnFrame")
+
+  -- Inject addMods AFTER OnFrame (which rebuilds configTab.modList) but BEFORE BuildOutput
+  if pendingAddMods and type(pendingAddMods) == "table" then
+    local configModList = build.configTab and build.configTab.modList
+    if configModList then
+      for _, m in ipairs(pendingAddMods) do
+        local modStat = m.stat or m[1]
+        local modType = m.type or m[2]
+        local modVal  = m.value or m[3]
+        local modSrc  = m.source or "ScalingAdvisor"
+        if modStat and modType and modVal then
+          local ok2, newMod = pcall(function()
+            return modLib.createMod(modStat, modType, modVal, modSrc)
+          end)
+          if ok2 and newMod then
+            configModList:AddMod(newMod)
+          end
+        end
+      end
+      restore[#restore+1] = function()
+        build.configTab:BuildModList()
+      end
+    end
+  end
+
   build.calcsTab:BuildOutput()
   local stats = collectStats()
 
@@ -1310,8 +1308,9 @@ for line in io.lines() do
   elseif action == "list_gems" then
     if not build then err_resp("No build loaded"); goto continue end
     local gems = {}
-    if data and data.gems then
-      for gemId, gemInfo in pairs(data.gems) do
+    local gemDB = (build.data and build.data.gems) or (data and data.gems)
+    if gemDB then
+      for gemId, gemInfo in pairs(gemDB) do
         if gemInfo.name then
           local isSupport = false
           if gemInfo.grantedEffect and gemInfo.grantedEffect.support then
@@ -1339,17 +1338,23 @@ for line in io.lines() do
 
     -- Find new gem data
     local newGemData = nil
-    if data and data.gems then
-      for _, gi in pairs(data.gems) do
+    local gemDB = (build.data and build.data.gems) or (data and data.gems)
+    if gemDB then
+      for _, gi in pairs(gemDB) do
         if gi.name == newGemName then newGemData = gi; break end
       end
     end
     if not newGemData then err_resp("Gem not found: " .. newGemName); goto continue end
 
     -- Save originals
-    local savedGemData = gem.gemData
-    local savedNameSpec = gem.nameSpec
-    local savedSkillId = gem.skillId
+    local saved = {
+      gemData = gem.gemData,
+      nameSpec = gem.nameSpec,
+      skillId = gem.skillId,
+      displayEffect = gem.displayEffect,
+      level = gem.level,
+      qualityId = gem.qualityId,
+    }
 
     -- Collect baseline stats first
     build.buildFlag = true; runCallback("OnFrame"); build.calcsTab:BuildOutput()
@@ -1359,15 +1364,27 @@ for line in io.lines() do
     gem.gemData = newGemData
     gem.nameSpec = newGemName
     gem.skillId = newGemData.grantedEffectId or newGemName
+    gem.displayEffect = nil
+    -- Process the level for the new gem
+    local ok3, newLevel = pcall(function()
+      return build.skillsTab:ProcessGemLevel(newGemData)
+    end)
+    if ok3 and newLevel then gem.level = newLevel end
+    if gem.qualityId == nil or gem.qualityId == "" then
+      gem.qualityId = "Default"
+    end
 
     -- Recalculate
     build.buildFlag = true; runCallback("OnFrame"); build.calcsTab:BuildOutput()
     local hypotheticalStats = collectStats()
 
     -- Restore
-    gem.gemData = savedGemData
-    gem.nameSpec = savedNameSpec
-    gem.skillId = savedSkillId
+    gem.gemData = saved.gemData
+    gem.nameSpec = saved.nameSpec
+    gem.skillId = saved.skillId
+    gem.displayEffect = saved.displayEffect
+    gem.level = saved.level
+    gem.qualityId = saved.qualityId
     build.buildFlag = true; runCallback("OnFrame"); build.calcsTab:BuildOutput()
 
     ok_resp({ baseline = baselineStats, hypothetical = hypotheticalStats })

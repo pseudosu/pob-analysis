@@ -67,7 +67,8 @@ export function WhatIfSwapper({ skills }: Props) {
     async function load() {
       setLoadingGems(true)
       try {
-        const gems = await api.pob.listGems()
+        const resp = await api.pob.listGems()
+        const gems = resp?.gems || resp
         if (!cancelled && Array.isArray(gems)) setAllGems(gems)
       } catch {
         // Ignore — dropdown stays empty
@@ -130,7 +131,13 @@ export function WhatIfSwapper({ skills }: Props) {
 
     try {
       const res = await api.pob.swapGem({ groupIdx: gi, gemIdx: gj, newGemName: selectedTarget })
-      setResult(res)
+      if (res?.ok === false) {
+        setError(res.error || 'Swap failed')
+      } else if (res?.baseline && res?.hypothetical) {
+        setResult({ baseline: res.baseline, hypothetical: res.hypothetical })
+      } else {
+        setError('Unexpected response from swap')
+      }
     } catch (e: any) {
       setError(e?.message || 'Swap comparison failed')
     } finally {
