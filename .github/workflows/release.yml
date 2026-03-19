@@ -107,33 +107,16 @@ jobs:
           cp resources/pob-src-repo/runtime/msvcp140_2.dll resources/pob-src/ 2>/dev/null || true
           cp resources/pob-src-repo/runtime/lua-utf8.dll resources/pob-runtime/lua/ 2>/dev/null || true
 
-      - name: Download Windows LuaJIT
-        shell: bash
+      - name: Build LuaJIT from source
+        shell: cmd
         run: |
-          curl -sL -o luajit-win.zip "https://github.com/nicebyte/luajit-build/releases/download/v2.1/LuaJIT-win-x64.zip" || true
-          if [ -f luajit-win.zip ]; then
-            unzip -o luajit-win.zip -d luajit-tmp 2>/dev/null || true
-            find luajit-tmp -name "luajit.exe" -exec cp {} resources/luajit/luajit-win-x64.exe \; 2>/dev/null || true
-            find luajit-tmp -name "lua51.dll" -exec cp {} resources/luajit/lua51.dll \; 2>/dev/null || true
-            # Copy jit/ library folder
-            JIT_DIR=$(find luajit-tmp -type d -name "jit" | head -1)
-            if [ -n "$JIT_DIR" ]; then
-              cp -r "$JIT_DIR" resources/luajit/jit
-            fi
-          fi
-          # Fallback: try chocolatey
-          if [ ! -f "resources/luajit/luajit-win-x64.exe" ]; then
-            choco install luajit -y 2>/dev/null || true
-            cp "$(which luajit 2>/dev/null || echo /c/ProgramData/chocolatey/bin/luajit.exe)" resources/luajit/luajit-win-x64.exe 2>/dev/null || true
-          fi
-          # Fallback jit/ from PoB repo if not found in zip
-          if [ ! -d "resources/luajit/jit" ]; then
-            # Build jit/ from the PoB bundled LuaJIT share
-            JIT_REPO=$(find resources/pob-src-repo -type d -name "jit" -path "*/luajit*" | head -1)
-            if [ -n "$JIT_REPO" ]; then
-              cp -r "$JIT_REPO" resources/luajit/jit
-            fi
-          fi
+          git clone --depth=1 https://github.com/LuaJIT/LuaJIT.git luajit-src
+          cd luajit-src\src
+          call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
+          call msvcbuild.bat
+          copy luajit.exe ..\..\resources\luajit\luajit-win-x64.exe
+          copy lua51.dll ..\..\resources\luajit\lua51.dll
+          xcopy /E /I jit ..\..\resources\luajit\jit
 
       - name: Build app
         run: npm run build
