@@ -63,6 +63,20 @@ elif [ "$(uname)" = "Darwin" ]; then
   fi
 fi
 
+# Copy LuaJIT jit/ library folder (required for JIT compilation)
+if [ "$(uname)" = "Darwin" ]; then
+  JIT_SRC="/opt/homebrew/share/luajit-2.1/jit"
+  if [ ! -d "$JIT_SRC" ]; then
+    JIT_SRC="/usr/local/share/luajit-2.1/jit"
+  fi
+  if [ -d "$JIT_SRC" ]; then
+    cp -r "$JIT_SRC" resources/luajit/jit
+    echo "  Copied LuaJIT jit/ library"
+  else
+    echo "  WARNING: LuaJIT jit/ library not found"
+  fi
+fi
+
 # Compile lua-utf8.so for Mac
 if [ "$(uname)" = "Darwin" ] && command -v clang &>/dev/null; then
   echo "  Compiling lua-utf8.so..."

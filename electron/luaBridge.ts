@@ -64,7 +64,9 @@ export class LuaBridge extends EventEmitter {
 
     const luaPath = join(this.pobSrcPath, '?.lua') + ';' +
                     join(this.pobSrcPath, '?', 'init.lua') + ';' +
-                    join(runtimeLuaPath, '?.lua') + ';./?.lua'
+                    join(runtimeLuaPath, '?.lua') + ';' +
+                    join(luajitDir, '?.lua') + ';' +
+                    join(luajitDir, '?', 'init.lua') + ';./?.lua'
     // On Windows, .dll must come before .so to avoid loading Mac binaries
     const luaCpath = process.platform === 'win32'
       ? join(runtimeLuaPath, '?.dll') + ';./?.dll'

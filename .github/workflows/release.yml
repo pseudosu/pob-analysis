@@ -42,6 +42,10 @@ jobs:
           cp -r resources/pob-src-repo/runtime/lua/sha1 resources/pob-runtime/lua/ 2>/dev/null || true
           # LuaJIT binary
           cp "$(which luajit)" resources/luajit/luajit-mac-arm64
+          # LuaJIT jit/ library (required for JIT compilation)
+          JIT_SRC="/opt/homebrew/share/luajit-2.1/jit"
+          if [ ! -d "$JIT_SRC" ]; then JIT_SRC="/usr/local/share/luajit-2.1/jit"; fi
+          cp -r "$JIT_SRC" resources/luajit/jit
 
       - name: Compile lua-utf8.so
         run: |
@@ -111,11 +115,24 @@ jobs:
             unzip -o luajit-win.zip -d luajit-tmp 2>/dev/null || true
             find luajit-tmp -name "luajit.exe" -exec cp {} resources/luajit/luajit-win-x64.exe \; 2>/dev/null || true
             find luajit-tmp -name "lua51.dll" -exec cp {} resources/luajit/lua51.dll \; 2>/dev/null || true
+            # Copy jit/ library folder
+            JIT_DIR=$(find luajit-tmp -type d -name "jit" | head -1)
+            if [ -n "$JIT_DIR" ]; then
+              cp -r "$JIT_DIR" resources/luajit/jit
+            fi
           fi
-          # Fallback: try MSYS2
+          # Fallback: try chocolatey
           if [ ! -f "resources/luajit/luajit-win-x64.exe" ]; then
             choco install luajit -y 2>/dev/null || true
             cp "$(which luajit 2>/dev/null || echo /c/ProgramData/chocolatey/bin/luajit.exe)" resources/luajit/luajit-win-x64.exe 2>/dev/null || true
+          fi
+          # Fallback jit/ from PoB repo if not found in zip
+          if [ ! -d "resources/luajit/jit" ]; then
+            # Build jit/ from the PoB bundled LuaJIT share
+            JIT_REPO=$(find resources/pob-src-repo -type d -name "jit" -path "*/luajit*" | head -1)
+            if [ -n "$JIT_REPO" ]; then
+              cp -r "$JIT_REPO" resources/luajit/jit
+            fi
           fi
 
       - name: Build app
