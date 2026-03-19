@@ -9,7 +9,7 @@ export interface ScalingTest {
   name: string
   description: string
   category: 'offensive' | 'defensive'
-  mods: Array<{ stat: string; type: string; value: number }>
+  mods: Array<{ text?: string; stat?: string; type?: string; value?: number }>
 }
 
 export interface ScalingResult {
@@ -28,99 +28,84 @@ export const OFFENSIVE_TESTS: ScalingTest[] = [
     name: '+10% More Damage',
     description: 'A 10% more damage multiplier (e.g. from a support gem)',
     category: 'offensive',
-    mods: [{ stat: 'Damage', type: 'MORE', value: 10 }],
+    mods: [{ text: '10% more Damage' }],
   },
   {
     id: 'inc-damage-10',
     name: '+10% Increased Damage',
     description: '10% increased damage from passives or gear',
     category: 'offensive',
-    mods: [{ stat: 'Damage', type: 'INC', value: 10 }],
+    mods: [{ text: '10% increased Damage' }],
   },
   {
     id: 'crit-multi-10',
     name: '+10% Crit Multiplier',
     description: '+10% to critical strike multiplier',
     category: 'offensive',
-    mods: [{ stat: 'CritMultiplier', type: 'BASE', value: 10 }],
+    mods: [{ text: '+10% to Critical Strike Multiplier' }],
   },
   {
     id: 'crit-chance-1',
     name: '+1% Base Crit Chance',
     description: '+1% to critical strike chance',
     category: 'offensive',
-    mods: [{ stat: 'CritChance', type: 'BASE', value: 1 }],
+    mods: [{ text: '+1% to Critical Strike Chance' }],
   },
   {
     id: 'attack-speed-10',
     name: '+10% Attack/Cast Speed',
     description: '10% increased attack and cast speed',
     category: 'offensive',
-    mods: [{ stat: 'Speed', type: 'INC', value: 10 }],
+    mods: [{ text: '10% increased Attack and Cast Speed' }],
   },
   {
     id: 'flat-phys-20',
     name: '+10-20 Physical Damage',
-    description: 'Adds 10 to 20 physical damage to attacks/spells',
+    description: 'Adds 10 to 20 physical damage to attacks',
     category: 'offensive',
-    mods: [
-      { stat: 'PhysicalMin', type: 'BASE', value: 10 },
-      { stat: 'PhysicalMax', type: 'BASE', value: 20 },
-    ],
+    mods: [{ text: 'Adds 10 to 20 Physical Damage to Attacks' }],
   },
   {
     id: 'flat-light-20',
     name: '+10-20 Lightning Damage',
-    description: 'Adds 10 to 20 lightning damage',
+    description: 'Adds 10 to 20 lightning damage to attacks',
     category: 'offensive',
-    mods: [
-      { stat: 'LightningMin', type: 'BASE', value: 10 },
-      { stat: 'LightningMax', type: 'BASE', value: 20 },
-    ],
+    mods: [{ text: 'Adds 10 to 20 Lightning Damage to Attacks' }],
   },
   {
     id: 'flat-cold-20',
     name: '+10-20 Cold Damage',
-    description: 'Adds 10 to 20 cold damage',
+    description: 'Adds 10 to 20 cold damage to attacks',
     category: 'offensive',
-    mods: [
-      { stat: 'ColdMin', type: 'BASE', value: 10 },
-      { stat: 'ColdMax', type: 'BASE', value: 20 },
-    ],
+    mods: [{ text: 'Adds 10 to 20 Cold Damage to Attacks' }],
   },
   {
     id: 'flat-fire-20',
     name: '+10-20 Fire Damage',
-    description: 'Adds 10 to 20 fire damage',
+    description: 'Adds 10 to 20 fire damage to attacks',
     category: 'offensive',
-    mods: [
-      { stat: 'FireMin', type: 'BASE', value: 10 },
-      { stat: 'FireMax', type: 'BASE', value: 20 },
-    ],
+    mods: [{ text: 'Adds 10 to 20 Fire Damage to Attacks' }],
   },
   {
     id: 'flat-chaos-20',
     name: '+10-20 Chaos Damage',
-    description: 'Adds 10 to 20 chaos damage',
+    description: 'Adds 10 to 20 chaos damage to attacks',
     category: 'offensive',
-    mods: [
-      { stat: 'ChaosMin', type: 'BASE', value: 10 },
-      { stat: 'ChaosMax', type: 'BASE', value: 20 },
-    ],
+    mods: [{ text: 'Adds 10 to 20 Chaos Damage to Attacks' }],
   },
   {
     id: 'gem-level-1',
     name: '+1 All Gem Levels',
     description: '+1 to level of all skill gems',
     category: 'offensive',
-    mods: [{ stat: 'GemLevel', type: 'BASE', value: 1 }],
+    mods: [{ text: '+1 to Level of all Skill Gems' }],
   },
   {
     id: 'penetration-10',
     name: '+10% Ele Penetration',
     description: '10% elemental penetration',
     category: 'offensive',
-    mods: [{ stat: 'ElementalPenetration', type: 'BASE', value: 10 }],
+    mods: [{ text: 'Damage Penetrates 10% Elemental Resistances' }],
   },
 ]
 
@@ -132,28 +117,28 @@ export const DEFENSIVE_TESTS: ScalingTest[] = [
     name: '+100 Flat Life',
     description: '+100 to maximum life',
     category: 'defensive',
-    mods: [{ stat: 'Life', type: 'BASE', value: 100 }],
+    mods: [{ text: '+100 to maximum Life' }],
   },
   {
     id: 'inc-life-10',
     name: '+10% Increased Life',
     description: '10% increased maximum life',
     category: 'defensive',
-    mods: [{ stat: 'Life', type: 'INC', value: 10 }],
+    mods: [{ text: '10% increased maximum Life' }],
   },
   {
     id: 'flat-es-200',
     name: '+200 Flat ES',
     description: '+200 to maximum energy shield',
     category: 'defensive',
-    mods: [{ stat: 'EnergyShield', type: 'BASE', value: 200 }],
+    mods: [{ text: '+200 to maximum Energy Shield' }],
   },
   {
     id: 'inc-es-10',
     name: '+10% Increased ES',
     description: '10% increased maximum energy shield',
     category: 'defensive',
-    mods: [{ stat: 'EnergyShield', type: 'INC', value: 10 }],
+    mods: [{ text: '10% increased maximum Energy Shield' }],
   },
   {
     id: 'max-res-1',
@@ -161,9 +146,9 @@ export const DEFENSIVE_TESTS: ScalingTest[] = [
     description: '+1% to maximum fire/cold/lightning resistance',
     category: 'defensive',
     mods: [
-      { stat: 'FireResistMax', type: 'BASE', value: 1 },
-      { stat: 'ColdResistMax', type: 'BASE', value: 1 },
-      { stat: 'LightningResistMax', type: 'BASE', value: 1 },
+      { text: '+1% to maximum Fire Resistance' },
+      { text: '+1% to maximum Cold Resistance' },
+      { text: '+1% to maximum Lightning Resistance' },
     ],
   },
   {
@@ -171,21 +156,21 @@ export const DEFENSIVE_TESTS: ScalingTest[] = [
     name: '+500 Flat Armour',
     description: '+500 to armour',
     category: 'defensive',
-    mods: [{ stat: 'Armour', type: 'BASE', value: 500 }],
+    mods: [{ text: '+500 to Armour' }],
   },
   {
     id: 'inc-evasion-10',
     name: '+10% Increased Evasion',
     description: '10% increased evasion rating',
     category: 'defensive',
-    mods: [{ stat: 'Evasion', type: 'INC', value: 10 }],
+    mods: [{ text: '10% increased Evasion Rating' }],
   },
   {
     id: 'spell-suppress-5',
     name: '+5% Spell Suppression',
     description: '+5% chance to suppress spell damage',
     category: 'defensive',
-    mods: [{ stat: 'SpellSuppressionChance', type: 'BASE', value: 5 }],
+    mods: [{ text: '+5% chance to Suppress Spell Damage' }],
   },
 ]
 

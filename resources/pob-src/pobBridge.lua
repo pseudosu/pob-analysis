@@ -519,26 +519,53 @@ local function calcWith(params)
   build.buildFlag = true
   runCallback("OnFrame")
 
-  -- Inject addMods AFTER OnFrame (which rebuilds configTab.modList) but BEFORE BuildOutput
+  -- Inject addMods AFTER OnFrame but BEFORE BuildOutput
+  -- Uses modLib.parseMod to parse human-readable mod strings (most reliable)
   if pendingAddMods and type(pendingAddMods) == "table" then
     local configModList = build.configTab and build.configTab.modList
     if configModList then
+      local added = false
       for _, m in ipairs(pendingAddMods) do
-        local modStat = m.stat or m[1]
-        local modType = m.type or m[2]
-        local modVal  = m.value or m[3]
-        local modSrc  = m.source or "ScalingAdvisor"
-        if modStat and modType and modVal then
-          local ok2, newMod = pcall(function()
-            return modLib.createMod(modStat, modType, modVal, modSrc)
-          end)
-          if ok2 and newMod then
-            configModList:AddMod(newMod)
+        -- Support both text-based mods and structured mods
+        if m.text then
+          -- Parse mod text like "10% more Damage" using PoB's mod parser
+          local ok2, parsedMods = pcall(modLib.parseMod, m.text)
+          if ok2 and parsedMods and type(parsedMods) == "table" then
+            for _, mod in ipairs(parsedMods) do
+              if type(mod) == "table" and mod.name then
+                configModList:AddMod(mod)
+                added = true
+              end
+            end
+          end
+          if not ok2 then
+            io.stderr:write("[addMods] parseMod error for: " .. tostring(m.text) .. " => " .. tostring(parsedMods) .. "\n")
+          elseif not added then
+            io.stderr:write("[addMods] parseMod no valid mods for: " .. tostring(m.text) .. "\n")
+          end
+        else
+          -- Structured mod: {stat, type, value}
+          local modStat = m.stat or m[1]
+          local modType = m.type or m[2]
+          local modVal  = m.value or m[3]
+          local modSrc  = m.source or "ScalingAdvisor"
+          if modStat and modType and modVal then
+            local ok2, newMod = pcall(function()
+              return modLib.createMod(modStat, modType, modVal, modSrc)
+            end)
+            if ok2 and newMod then
+              configModList:AddMod(newMod)
+              added = true
+            else
+              io.stderr:write("[addMods] createMod failed for: " .. tostring(modStat) .. "/" .. tostring(modType) .. "/" .. tostring(modVal) .. "\n")
+            end
           end
         end
       end
-      restore[#restore+1] = function()
-        build.configTab:BuildModList()
+      if added then
+        restore[#restore+1] = function()
+          build.configTab:BuildModList()
+        end
       end
     end
   end
