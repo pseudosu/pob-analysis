@@ -1,6 +1,6 @@
 {
   "name": "pob-analysis",
-  "version": "0.1.0",
+  "version": "0.2.1",
   "description": "Path of Building build analysis desktop app",
   "main": "dist-electron/main.js",
   "scripts": {
