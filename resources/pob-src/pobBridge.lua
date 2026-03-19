@@ -987,6 +987,41 @@ for line in io.lines() do
         -- Rebuild and collect stats (ONE BuildOutput per job)
         build.buildFlag = true
         runCallback("OnFrame")
+
+        -- Inject addMods after OnFrame but before BuildOutput
+        if job.addMods and type(job.addMods) == "table" then
+          local configModList = build.configTab and build.configTab.modList
+          if configModList then
+            local modAdded = false
+            for _, m in ipairs(job.addMods) do
+              if m.text then
+                local ok3, parsedMods = pcall(modLib.parseMod, m.text)
+                if ok3 and parsedMods and type(parsedMods) == "table" then
+                  for _, mod in ipairs(parsedMods) do
+                    if type(mod) == "table" and mod.name then
+                      configModList:AddMod(mod)
+                      modAdded = true
+                    end
+                  end
+                end
+              elseif m.stat and m.type and m.value then
+                local ok3, newMod = pcall(function()
+                  return modLib.createMod(m.stat, m.type, m.value, m.source or "ScalingAdvisor")
+                end)
+                if ok3 and newMod then
+                  configModList:AddMod(newMod)
+                  modAdded = true
+                end
+              end
+            end
+            if modAdded then
+              restore[#restore+1] = function()
+                build.configTab:BuildModList()
+              end
+            end
+          end
+        end
+
         build.calcsTab:BuildOutput()
         local stats = collectStats()
         stats.ok = true
