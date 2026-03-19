@@ -135,7 +135,6 @@ export const UNIQUE_ITEM_DB: Record<string, string> = {
   "Ralakesh's Impatience": 'Grants minimum endurance, frenzy, and power charges equal to maximum while stationary. Provides full charges while standing still, great for bossing.',
   "Kaom's Roots": 'Grants massive life and unwavering stance (cannot be stunned) but prevents movement speed modification. Tanky boots for slow, hard-hitting builds.',
   'Bubonic Trail': 'Grants death walk (enemies explode on death in your path) if socketed with abyss jewels, plus increased damage per socketed jewel.',
-  "Garukhan's Flight": 'Grants massive evasion, movement speed, and life regeneration based on evasion rating. Strong for evasion-stacking builds.',
   'Seven-League Step': 'Grants 50% increased movement speed with no other stats. Purely a speed boot for leveling and low-gear mapping.',
   "Gang's Momentum": 'Grants increased fire damage and ignite chance to movement skills. Niche boots for fire movement skill builds.',
   'Goldwyrm': 'Grants increased quantity of items found and fire resistance. Magic-find boots.',
@@ -364,7 +363,6 @@ export const UNIQUE_ITEM_DB: Record<string, string> = {
   'The Surrender': 'Grants level 30 Reckoning triggered on block and life recovery on block. Provides sustain and counterattack damage on block.',
   'Spirit Shield (various crafted)': 'Crafted spirit shields provide energy shield and spell damage. The default choice for ES-based spellcasters.',
   'Apep\'s Supremacy': 'Grants chaos damage to spells, energy shield on block, and poison duration. Useful for chaos/poison spell builds with block.',
-  'Ahn\'s Heritage': 'Grants +3% max fire resistance and onslaught when at maximum endurance charges. Strong defensive shield for endurance charge builds.',
   'Replica Atziri\'s Mirror': 'Grants elemental damage and attack block. An offensive variant of the original Atziri\'s Mirror.',
   'Crest of Desire': 'Socketed gem has +1 level and 50% increased quality, massively boosting a single skill gem. A pseudo 7-link in a shield.',
   'Mahuxotl\'s Machination': 'Grants five keystones: Corrupted Soul, Divine Flesh, Eternal Youth, Vaal Pact, and Immortal Ambition. Enables complex defensive layering.',
@@ -469,7 +467,6 @@ export const UNIQUE_ITEM_DB: Record<string, string> = {
   'Frostbreath': 'Doubles damage against chilled enemies with hits. Massive conditional damage boost for cold-hit builds.',
   'Doryani\'s Catalyst': 'Grants elemental damage and elemental leech. All-purpose elemental sceptre.',
   'Eclipse Solaris': 'Grants spell damage and block chance if you have blocked recently. Defensive spell shield with spell damage.',
-  'Al Dhih': 'Grants socketed gems have culling strike and life on hit against cursed enemies. Utility claw for curse builds.',
 
   // ---------------------------------------------------------------------------
   // ADDITIONAL BODY ARMOURS
@@ -512,7 +509,6 @@ export const UNIQUE_ITEM_DB: Record<string, string> = {
   'Bones of Ullr': 'Grants +1 to maximum zombies and spectres. Budget boots for summoner builds.',
   'Victario\'s Flight': 'Grants movement speed to you and nearby allies. Budget group-play speed boots.',
   'Three-step Assault': 'Grants increased evasion while you have onslaught and spell dodge. Defensive evasion boots.',
-  'Stormcharger': 'Grants increased movement speed and adds lightning damage. Budget lightning-themed boots.',
   'Brine Crown': 'See The Brine Crown above - often referred to without "The".',
 
   // ---------------------------------------------------------------------------
@@ -534,7 +530,6 @@ export const UNIQUE_ITEM_DB: Record<string, string> = {
   // ADDITIONAL AMULETS
   // ---------------------------------------------------------------------------
 
-  'Bisco\'s Collar': 'Grants massively increased quantity and rarity from normal monsters. A top-tier magic-find amulet.',
   'Stone of Lazhwar': 'Converts block chance to spell block at 50%. Budget way to gain spell block.',
   'Daresso\'s Salute': 'Grants weapon range, movement speed, and increased damage while not wearing a chest. Used in specific no-armour builds.',
   'Extractor Mentis': 'Grants power and frenzy charges based on minion kills. Used in minion builds that want charge generation.',
@@ -547,7 +542,6 @@ export const UNIQUE_ITEM_DB: Record<string, string> = {
   'Victario\'s Acuity': 'Grants charges to allies on critical strike. A support amulet for party play.',
   'Night\'s Hold': 'Socketed gem is supported by multiple support gems at level 10. A pseudo 5-link in an amulet slot for leveling.',
   'Defiance of Destiny': 'Restores a portion of missing life before a hit lands, effectively giving you a pre-heal. Powerful defensive amulet against big hits.',
-  'The Stampede': 'See boots section - this is actually boots.',
 
   // ---------------------------------------------------------------------------
   // ADDITIONAL RINGS
@@ -558,7 +552,6 @@ export const UNIQUE_ITEM_DB: Record<string, string> = {
   'Lori\'s Lantern': 'Grants chaos resistance and defensive bonuses when on low life. Budget defensive ring for low-life builds.',
   'Shavronne\'s Revelation': 'Right ring slot: massive ES regen but no mana regen. Left ring slot: massive mana regen but no ES regen. Slot-dependent mechanic.',
   'Valyrium': 'Stun threshold is based on energy shield instead of life. Prevents stunlock for CI characters.',
-  'Gifts from Above': 'Creates consecrated ground on crit and grants increased rarity. Consecrated ground provides life regeneration and increased damage to enemies.',
   'Rigwald\'s Crest': 'Grants the Aspect of the Wolf skill. A compact way to add wolf pack bonuses.',
   'The Pariah': 'Grants massive bonuses per socket colour: red gives life, green gives dexterity, blue gives intelligence, white gives quantity.',
   'Vivinsect': 'Grants increased effect of heralds and herald-specific bonuses. A herald-enhancing ring.',
@@ -586,7 +579,6 @@ export const UNIQUE_ITEM_DB: Record<string, string> = {
   'Beltimber Blade': 'Grants additional projectiles with far shot while dual wielding. Strong for dual-wield projectile attack builds.',
   'Dreamfeather': 'Grants increased attack damage per 450 evasion rating. Core sword for evasion-stacking attack builds.',
   'The Rippling Thoughts': 'Triggers Storm Cascade on hit. Automated lightning spell procs during melee combat.',
-  'Shade of Solaris': 'Grants massive damage bonus if you have not crit recently. Used for one-big-hit builds.',
   'United in Dream': 'Grants Envy aura to you and minions and causes minions to poison. Core for poison minion builds.',
   'Ephemeral Edge': 'Increases maximum energy shield by 30% but reduces maximum life. Pure ES-scaling sword.',
   'The Cauteriser': 'Grants fire damage and a burning ground effect on hit. Solid leveling two-hand axe.',
@@ -606,7 +598,6 @@ export const UNIQUE_ITEM_DB: Record<string, string> = {
   'Replica Rumi\'s Concoction': 'Grants spell block instead of attack and spell block. Focused purely on spell block.',
   'The Traitor': 'Actually a keystone from Timeless jewel, not a flask.',
   'Oriath\'s End': 'Enemies you kill during flask effect explode. Provides pack-clearing explosions.',
-  'Coruscating Elixir': 'Removes all ES on use but chaos damage does not bypass ES during effect. Budget Shavronnes effect on a flask.',
   'Bottled Storm': 'Creates a storm that hits enemies with lightning on use. Automated lightning damage.',
   'The Writhing Jar': 'Creates two worm minions that can be killed for on-kill triggers. Essential for boss-phase on-kill mechanics.',
 
@@ -644,7 +635,5 @@ export const UNIQUE_ITEM_DB: Record<string, string> = {
   'Medium Cluster Jewel': 'A customizable jewel that sockets into large clusters for additional notables. Not a unique but essential for cluster stacking.',
   'Small Cluster Jewel': 'A customizable jewel providing specific defensive or utility notables. Not a unique but useful for targeted bonuses.',
   'Replica Conqueror\'s Efficiency': 'Grants reduced mana reservation with altered bonuses from the original. Useful in aura builds.',
-  'Ancestral Vision': 'Grants Ancestral Bond when socketed. Enables totem builds without pathing to the keystone.',
   'Lioneye\'s Fall': 'Transforms melee and melee weapon modifiers in radius to bow modifiers. Enables bow builds to use melee clusters.',
-  'The Overflowing Chalice': 'See flasks section - this is a flask, not a jewel.',
 };

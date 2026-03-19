@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "description": "Path of Building build analysis desktop app",
   "main": "dist-electron/main.js",
-"scripts": {
+  "scripts": {
     "dev": "electron-vite dev --config electron.vite.config.mjs",
     "build": "electron-vite build --config electron.vite.config.mjs",
     "preview": "electron-vite preview --config electron.vite.config.mjs",
@@ -13,7 +13,7 @@
     "package:all": "npm run build && electron-builder --mac --win --linux --config electron-builder.config.cjs"
   },
   "dependencies": {
-    "fast-xml-parser": "^4.3.6",
+    "fast-xml-parser": "^5.5.6",
     "recharts": "^2.12.7"
   },
   "devDependencies": {
@@ -22,12 +22,12 @@
     "@types/react-dom": "^18.3.0",
     "@vitejs/plugin-react": "^4.3.1",
     "autoprefixer": "^10.4.19",
-    "electron": "^31.1.0",
-    "electron-builder": "^24.13.3",
-    "electron-vite": "^2.3.0",
+    "electron": "^41.0.3",
+    "electron-builder": "^26.8.1",
+    "electron-vite": "^5.0.0",
     "postcss": "^8.4.39",
     "tailwindcss": "^3.4.4",
     "typescript": "^5.5.2",
-    "vite": "^5.3.1"
+    "vite": "^7.3.1"
   }
 }
