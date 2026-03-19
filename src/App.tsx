@@ -13,14 +13,18 @@ import { DefenseOverview } from './components/DefenseOverview'
 import { DefenseBreakdown } from './components/DefenseBreakdown'
 import { EhpFactorList } from './components/EhpFactorList'
 import { BuildGuide } from './components/BuildGuide'
+import { ScalingAdvisor } from './components/ScalingAdvisor'
+import { RecoverySufficiency } from './components/RecoverySufficiency'
+import { DpsRampTimeline } from './components/DpsRampTimeline'
+import { WhatIfSwapper } from './components/WhatIfSwapper'
 import { clearTooltipCache } from './components/PoeTooltip'
 import { runSensitivityAnalysis } from './lib/sensitivity'
 import type { BuildData, Factor } from './types/pob'
 
 type AppState = 'idle' | 'loading' | 'analyzing' | 'done' | 'error'
 type Section = 'offense' | 'defense' | 'guide'
-type OffenseTab = 'factors' | 'gear' | 'breakdown' | 'synergies'
-type DefenseTab = 'ehp' | 'dangers' | 'def-breakdown'
+type OffenseTab = 'factors' | 'gear' | 'breakdown' | 'synergies' | 'scaling' | 'ramp' | 'whatif'
+type DefenseTab = 'ehp' | 'dangers' | 'def-breakdown' | 'recovery'
 
 export default function App() {
   const [state, setState] = useState<AppState>('idle')
@@ -498,6 +502,9 @@ export default function App() {
                   { key: 'gear' as OffenseTab, label: 'Gear' },
                   { key: 'breakdown' as OffenseTab, label: 'Breakdown' },
                   { key: 'synergies' as OffenseTab, label: 'Synergies' },
+                  { key: 'scaling' as OffenseTab, label: 'Scaling' },
+                  { key: 'ramp' as OffenseTab, label: 'Ramp' },
+                  { key: 'whatif' as OffenseTab, label: 'What-If' },
                 ]).map(tab => (
                   <button key={tab.key} onClick={() => setOffenseTab(tab.key)}
                     className={`flex-1 px-2 py-1.5 rounded text-xs font-medium transition-all ${
@@ -520,7 +527,10 @@ export default function App() {
                 <GearDisplay slots={(build.items?.slots || []) as any} factors={factors} mode="full" />
               )}
               {offenseTab === 'breakdown' && breakdownData && <DamageBreakdown data={breakdownData} />}
-              {offenseTab === 'synergies' && synergyData && <SynergyDetector data={synergyData} />}
+              {offenseTab === 'synergies' && synergyData && <SynergyDetector data={synergyData} baselineDps={build.stats.CombinedDPS || build.stats.FullDPS || build.stats.TotalDPS || 0} baselineEhp={build.stats.TotalEHP || build.stats.Life || 0} />}
+              {offenseTab === 'scaling' && <ScalingAdvisor baselineDps={build.stats.CombinedDPS || build.stats.FullDPS || build.stats.TotalDPS || 0} baselineEhp={build.stats.TotalEHP || build.stats.Life || 0} />}
+              {offenseTab === 'ramp' && <DpsRampTimeline />}
+              {offenseTab === 'whatif' && <WhatIfSwapper skills={build.skills} />}
             </div>
           </div>
         )}
@@ -544,6 +554,7 @@ export default function App() {
                   { key: 'ehp' as DefenseTab, label: 'EHP Contributions' },
                   { key: 'dangers' as DefenseTab, label: 'Dangers' },
                   { key: 'def-breakdown' as DefenseTab, label: 'Breakdown' },
+                  { key: 'recovery' as DefenseTab, label: 'Recovery' },
                 ]).map(tab => (
                   <button key={tab.key} onClick={() => setDefenseTab(tab.key)}
                     className={`flex-1 px-2 py-1.5 rounded text-xs font-medium transition-all ${
@@ -564,6 +575,7 @@ export default function App() {
               )}
               {defenseTab === 'dangers' && dangerData && <DangerAnalysis data={dangerData} />}
               {defenseTab === 'def-breakdown' && <DefenseBreakdown breakdownData={breakdownData} dangerData={dangerData} />}
+              {defenseTab === 'recovery' && <RecoverySufficiency />}
             </div>
           </div>
         )}

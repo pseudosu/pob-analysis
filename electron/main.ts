@@ -294,6 +294,13 @@ const analysisHandler = (action: string) => async () => {
 ipcMain.handle('pob:getDangerAnalysis', analysisHandler('get_danger_analysis'))
 ipcMain.handle('pob:getSynergies', analysisHandler('get_synergies'))
 ipcMain.handle('pob:getDamageBreakdown', analysisHandler('get_damage_breakdown'))
+ipcMain.handle('pob:getRecoveryAnalysis', analysisHandler('get_recovery_analysis'))
+ipcMain.handle('pob:calcRampTimeline', analysisHandler('calc_ramp_timeline'))
+ipcMain.handle('pob:listGems', analysisHandler('list_gems'))
+ipcMain.handle('pob:swapGem', async (_e, params) => {
+  if (!luaBridge || luaBridge.isDead()) return { ok: false, error: 'No build loaded' }
+  try { return await luaBridge.send('swap_gem', params) } catch (e) { return { ok: false, error: (e as Error).message } }
+})
 
 // Reload all build data after switching spec/skills
 ipcMain.handle('pob:reloadBuildData', async () => {

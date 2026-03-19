@@ -25,6 +25,10 @@ const api = {
     getTooltip: (params: object) => ipcRenderer.invoke('pob:getTooltip', params),
     getAssetPath: (subpath: string) => ipcRenderer.invoke('pob:getAssetPath', subpath),
     getMainProcessLog: () => ipcRenderer.invoke('pob:getMainProcessLog'),
+    getRecoveryAnalysis: () => ipcRenderer.invoke('pob:getRecoveryAnalysis'),
+    calcRampTimeline: () => ipcRenderer.invoke('pob:calcRampTimeline'),
+    listGems: () => ipcRenderer.invoke('pob:listGems'),
+    swapGem: (params: object) => ipcRenderer.invoke('pob:swapGem', params),
   }
 }
 

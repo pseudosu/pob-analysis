@@ -498,6 +498,36 @@ local function calcWith(params)
     end
   end
 
+  -- Add temporary mods (for scaling advisor / what-if analysis)
+  if params.addMods and type(params.addMods) == "table" then
+    local configModList = build.configTab and build.configTab.modList
+    if configModList then
+      local addedMods = {}
+      for _, m in ipairs(params.addMods) do
+        local modStat = m.stat or m[1]
+        local modType = m.type or m[2]
+        local modVal  = m.value or m[3]
+        local modSrc  = m.source or "ScalingAdvisor"
+        if modStat and modType and modVal then
+          local ok2, newMod = pcall(function()
+            return modLib.createMod(modStat, modType, modVal, modSrc)
+          end)
+          if ok2 and newMod then
+            configModList:AddMod(newMod)
+            addedMods[#addedMods+1] = newMod
+          end
+        end
+      end
+      if #addedMods > 0 then
+        restore[#restore+1] = function()
+          -- Remove added mods by rebuilding modList without them
+          -- Simplest: just trigger a full config rebuild on restore
+          build.configTab:BuildModList()
+        end
+      end
+    end
+  end
+
   -- Deallocate a tree node temporarily
   if params.removeNode then
     local nodeId = params.removeNode
@@ -1187,6 +1217,160 @@ for line in io.lines() do
     else
       ok_resp(stats)
     end
+
+  elseif action == "get_recovery_analysis" then
+    if not build then err_resp("No build loaded"); goto continue end
+    local output = build.calcsTab.mainOutput or {}
+    local result = {
+      life = {
+        pool = output["Life"] or 0,
+        unreserved = output["LifeUnreserved"] or 0,
+        regen = output["LifeRegenRecovery"] or 0,
+        leechRate = output["LifeLeechGainRate"] or 0,
+        maxLeechRate = output["MaxLifeLeechRate"] or 0,
+        onBlock = output["LifeOnBlock"] or 0,
+        onSuppress = output["LifeOnSuppress"] or 0,
+        recoveryRateMod = output["LifeRecoveryRateMod"] or 1,
+        netRegen = output["NetLifeRegen"] or 0,
+        recoupAvg = output["LifeRecoupRecoveryAvg"] or 0,
+      },
+      energyShield = {
+        pool = output["EnergyShield"] or 0,
+        recharge = output["EnergyShieldRecharge"] or 0,
+        rechargeDelay = output["EnergyShieldRechargeDelay"] or 2,
+        regen = output["EnergyShieldRegenRecovery"] or 0,
+        leechRate = output["EnergyShieldLeechGainRate"] or 0,
+      },
+      mana = {
+        pool = output["Mana"] or 0,
+        unreserved = output["ManaUnreserved"] or 0,
+        regen = output["ManaRegenRecovery"] or 0,
+      },
+      ward = { pool = output["Ward"] or 0 },
+    }
+    -- Derived metrics
+    local totalLifeRec = (result.life.regen or 0) + (result.life.leechRate or 0) + (result.life.recoupAvg or 0)
+    result.totalLifeRecoveryPerSecond = totalLifeRec
+    result.timeToRecover50Pct = (result.life.unreserved > 0 and totalLifeRec > 0)
+      and (result.life.unreserved * 0.5 / totalLifeRec) or 0
+    ok_resp(result)
+
+  elseif action == "calc_ramp_timeline" then
+    if not build then err_resp("No build loaded"); goto continue end
+    local input = build.configTab.configSets[build.configTab.activeConfigSetId].input
+    local rampKeys = {
+      "usePowerCharges", "useFrenzyCharges", "useEnduranceCharges",
+      "buffOnslaught", "conditionUsingFlask",
+      "buffUnholyMight", "buffPhasing", "buffFortification",
+      "buffAdrenaline", "buffTailwind", "buffElusive",
+    }
+    -- Save originals
+    local saved = {}
+    for _, k in ipairs(rampKeys) do saved[k] = input[k] end
+
+    local stages = {}
+
+    -- Stage 0: Everything OFF
+    for _, k in ipairs(rampKeys) do input[k] = nil end
+    build.configTab:BuildModList()
+    build.buildFlag = true; runCallback("OnFrame"); build.calcsTab:BuildOutput()
+    stages[#stages+1] = { label = "Base", stats = collectStats() }
+
+    -- Stage 1: Charges ON
+    input.usePowerCharges = true
+    input.useFrenzyCharges = true
+    input.useEnduranceCharges = true
+    build.configTab:BuildModList()
+    build.buildFlag = true; runCallback("OnFrame"); build.calcsTab:BuildOutput()
+    stages[#stages+1] = { label = "Charges", stats = collectStats() }
+
+    -- Stage 2: + Flasks
+    input.conditionUsingFlask = true
+    build.configTab:BuildModList()
+    build.buildFlag = true; runCallback("OnFrame"); build.calcsTab:BuildOutput()
+    stages[#stages+1] = { label = "Flasks", stats = collectStats() }
+
+    -- Stage 3: + Buffs (onslaught, phasing, fortify, etc.)
+    input.buffOnslaught = true
+    input.buffPhasing = true
+    input.buffFortification = true
+    input.buffTailwind = true
+    input.buffElusive = true
+    build.configTab:BuildModList()
+    build.buildFlag = true; runCallback("OnFrame"); build.calcsTab:BuildOutput()
+    stages[#stages+1] = { label = "Buffs", stats = collectStats() }
+
+    -- Restore
+    for _, k in ipairs(rampKeys) do input[k] = saved[k] end
+    build.configTab:BuildModList()
+    build.buildFlag = true; runCallback("OnFrame"); build.calcsTab:BuildOutput()
+
+    ok_resp({ stages = stages })
+
+  elseif action == "list_gems" then
+    if not build then err_resp("No build loaded"); goto continue end
+    local gems = {}
+    if data and data.gems then
+      for gemId, gemInfo in pairs(data.gems) do
+        if gemInfo.name then
+          local isSupport = false
+          if gemInfo.grantedEffect and gemInfo.grantedEffect.support then
+            isSupport = true
+          end
+          gems[#gems+1] = { id = gemId, name = gemInfo.name, isSupport = isSupport }
+        end
+      end
+    end
+    table.sort(gems, function(a, b) return a.name < b.name end)
+    ok_resp({ gems = gems })
+
+  elseif action == "swap_gem" then
+    if not build then err_resp("No build loaded"); goto continue end
+    local groupIdx = params.groupIdx or 0
+    local gemIdx = params.gemIdx or 0
+    local newGemName = params.newGemName
+    if not newGemName then err_resp("Missing newGemName"); goto continue end
+
+    local sgl = build.skillsTab and build.skillsTab.socketGroupList
+    local group = sgl and sgl[groupIdx + 1]
+    if not group or not group.gemList then err_resp("Invalid group"); goto continue end
+    local gem = group.gemList[gemIdx + 1]
+    if not gem then err_resp("Invalid gem index"); goto continue end
+
+    -- Find new gem data
+    local newGemData = nil
+    if data and data.gems then
+      for _, gi in pairs(data.gems) do
+        if gi.name == newGemName then newGemData = gi; break end
+      end
+    end
+    if not newGemData then err_resp("Gem not found: " .. newGemName); goto continue end
+
+    -- Save originals
+    local savedGemData = gem.gemData
+    local savedNameSpec = gem.nameSpec
+    local savedSkillId = gem.skillId
+
+    -- Collect baseline stats first
+    build.buildFlag = true; runCallback("OnFrame"); build.calcsTab:BuildOutput()
+    local baselineStats = collectStats()
+
+    -- Swap gem
+    gem.gemData = newGemData
+    gem.nameSpec = newGemName
+    gem.skillId = newGemData.grantedEffectId or newGemName
+
+    -- Recalculate
+    build.buildFlag = true; runCallback("OnFrame"); build.calcsTab:BuildOutput()
+    local hypotheticalStats = collectStats()
+
+    -- Restore
+    gem.gemData = savedGemData
+    gem.nameSpec = savedNameSpec
+    gem.skillId = savedSkillId
+    build.buildFlag = true; runCallback("OnFrame"); build.calcsTab:BuildOutput()
+
+    ok_resp({ baseline = baselineStats, hypothetical = hypotheticalStats })
 
   elseif action == "quit" then
     ok_resp({ bye = true })
